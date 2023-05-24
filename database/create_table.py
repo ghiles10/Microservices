@@ -16,10 +16,11 @@ def create_table( conn: connection = conn_db ) -> None :
     with conn.cursor() as cur:
 
         cur.execute( """
-            CREATE TABLE IF NOT EXISTS users (
+            DROP TABLE IF EXISTS users;
+            CREATE TABLE users (
                 created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                username VARCHAR(20) NOT NULL,
-                password VARCHAR NOT NULL );
+                username VARCHAR(20) NOT NULL UNIQUE,
+                password VARCHAR(20) NOT NULL );
                     """
                 )
 

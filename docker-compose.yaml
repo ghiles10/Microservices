@@ -15,7 +15,7 @@ services:
     command: >
       sh -c "
         python database/create_table.py &&
-        uvicorn auth:app --host 0.0.0.0 --port 8000 --reload
+        uvicorn api.auth:app --host 0.0.0.0 --port 8000 --reload
       "
     volumes:
       - .:/app

@@ -1,7 +1,11 @@
+import sys
+sys.path.append(r"./")
+
 from fastapi import FastAPI, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from database.conn import get_postgres_connection 
+from api.exceptions.exceptions import UserAlreadyExists 
 
 app = FastAPI()
 
@@ -20,19 +24,29 @@ def login(credentials: HTTPBasicCredentials):
     conn_db = get_postgres_connection() 
 
     with conn_db.cursor() as cur: 
-        cur.execute( f""" 
-        INSERT INTO users (username, password) VALUES ('{username}', '{password}');
-         """ ) 
+
+        try: 
+            cur.execute( " INSERT INTO users (username, password) VALUES (%s, %s) "  ,
+                        
+                        ( username , password ) 
+                        )
+
+
+        except Exception as e : 
+            print('*' * 1000)
+            print(e)
+            print( type( ( username, password ) ))
 
         affected_rows = cur.rowcount
-        if affected_rows < 1: 
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        
-        row = cur.execute(""" SELECT * FROM users """)
-        row = cur.fetchone() 
-            
+        if affected_rows < 1 : 
+            print('-' * 1000)
 
-    return {f"message: {row}"}
+        cur.execute( " SELECT * FROM users " ) 
+
+        
+        
+
+        return {f"message: {cur.fetchall()}"}
 
 
 
