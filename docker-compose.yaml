@@ -1,0 +1,87 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: ""
+
+    image: api_image
+
+    ports:
+      - "8000:8000"
+      
+    restart: always
+
+    command: >
+      sh -c "
+        python database/create_table.py &&
+        uvicorn auth:app --host 0.0.0.0 --port 8000 --reload
+      "
+    volumes:
+      - .:/app
+      
+    depends_on:
+      - postgresdb
+      
+    networks:
+      - monreseau  
+
+    links:
+      - postgresdb
+ 
+  # test-app:
+
+  #   image: api_image
+
+  #   environment:
+  #     - ENVIRONMENT=test
+
+  #   depends_on:
+  #     - postgresdb
+
+  
+  #   command: sh -c 'if [ "$$ENVIRONMENT" = "test" ]; then pip install pytest && python database/app.py && pytest -v -s && exit $$?; fi'
+
+  #   volumes:
+  #     - .:/app
+
+  #   links:
+  #     - postgresdb
+
+  #   networks:
+  #     - monreseau 
+      
+  #   restart: "always"
+
+    
+  postgresdb:
+
+    image: postgres:14.1-alpine
+
+    networks:
+      - monreseau    
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
+  admine:
+
+    image: adminer
+    restart: always
+    depends_on:
+      - postgresdb
+    ports:
+      - 8080:8080
+    networks:
+      - monreseau    
+    links:
+      - postgresdb
+
+networks:
+  monreseau:
+     name: monreseau
