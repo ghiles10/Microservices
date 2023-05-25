@@ -19,8 +19,8 @@ def create_table( conn: connection = conn_db ) -> None :
             DROP TABLE IF EXISTS users;
             CREATE TABLE users (
                 created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                username VARCHAR(20) NOT NULL UNIQUE,
-                password VARCHAR(20) NOT NULL );
+                username VARCHAR(20) UNIQUE NOT NULL,
+                password VARCHAR(20) NOT NULL ); 
                     """
                 )
 
