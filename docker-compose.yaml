@@ -22,38 +22,44 @@ services:
       
     depends_on:
       - postgresdb
+      - mongodb
       
     networks:
       - monreseau  
 
     links:
       - postgresdb
+      - mongodb
  
-  # test-app:
+  converter:
+    build:
+      context: ./converter
 
-  #   image: api_image
+    image: converter_image
 
-  #   environment:
-  #     - ENVIRONMENT=test
+    restart: always
 
-  #   depends_on:
-  #     - postgresdb
-
-  
-  #   command: sh -c 'if [ "$$ENVIRONMENT" = "test" ]; then pip install pytest && python database/app.py && pytest -v -s && exit $$?; fi'
-
-  #   volumes:
-  #     - .:/app
-
-  #   links:
-  #     - postgresdb
-
-  #   networks:
-  #     - monreseau 
+    command: >
+      sh -c "
+        python test.py
+      "
+    volumes:
+      - ./converter:/app
       
-  #   restart: "always"
+    depends_on:
+      - postgresdb
+      - mongodb
+      - app
+      
+    networks:
+      - monreseau  
 
-    
+    links:
+      - postgresdb
+      - mongodb
+      - app
+
+
   postgresdb:
 
     image: postgres:14.1-alpine
@@ -68,6 +74,17 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+
+
+  mongodb:
+
+    image: mongo
+
+    networks:
+      - monreseau  
+
+    ports:
+      - 27017:27017
 
   admine:
 
@@ -85,3 +102,6 @@ services:
 networks:
   monreseau:
      name: monreseau
+
+
+  

@@ -46,10 +46,6 @@ def subscribe(credentials: HTTPBasicCredentials):
             logger.error('no rows affected')
             raise HTTPException(status_code=401  , detail = f"erreur insertion username : {username}") 
         
-        # # test requete
-        # cur.execute("SELECT * FROM users;")
-        # resultat_requete = cur.fetchone()
-
         conn_db.commit()
 
         return {f"message: {username} subscribe"}
@@ -71,7 +67,7 @@ def login(credentials: HTTPBasicCredentials):
             cur.execute(f"SELECT username FROM users where username = '{credentials.username}'") 
 
         except:
-            logger.error("error in database when retreiving username", {credentials.username}) 
+            logger.error(f"error in database when retreiving username {credentials.username}") 
             raise HTTPException(status_code=500, detail="Error in database")
 
         if not cur.fetchone() : 
