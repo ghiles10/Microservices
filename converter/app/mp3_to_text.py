@@ -27,7 +27,11 @@ def convert_mp3_to_text(mp3_file):
 
     return text
 
-# Exemple d'utilisation
-mp3_file = "/workspaces/Microservices/sample-1.mp3"
-text = convert_mp3_to_text(mp3_file)
-print(text)
+
+if '__name__' == '__main__' : 
+
+    # Exemple d'utilisation
+    mp3_file = "/workspaces/Microservices/sample-1.mp3"
+    text = convert_mp3_to_text(mp3_file)
+    print(text)
+

@@ -1,14 +1,27 @@
+print('k' *200)
+
+import sys 
+sys.path.append(r"./")
+
+print('ok 1')
+
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from pymongo import MongoClient
 
-from converter.utils.validate_login import login
+print('ok 2')
+
+
+from app.mp3_to_text import convert_mp3_to_text 
+from utils.validate_login import login
 
 app = FastAPI()
-security = HTTPBasic()
+# security = HTTPBasic()
 
 @app.post("/convert")
 def convert(credentials: HTTPBasicCredentials , mp3_file: UploadFile ):
 
+    """ Convert MP3 to text route and send it to mongoBD database """
 
     data_credentials = dict(credentials)
     response = login(data_credentials)
@@ -18,8 +31,33 @@ def convert(credentials: HTTPBasicCredentials , mp3_file: UploadFile ):
         raise response.raise_for_status()
 
     # Traiter le fichier MP3
-    file_converted = app.convert.function() 
-    mongo_db.put(file_converted) 
+    file_converted = convert_mp3_to_text(mp3_file) 
 
-    file_id = mongo_db.id()
-    return file_id
+    # Mongo db connexion
+    client = MongoClient("mongodb://mongodb:27017/")
+
+    # crée la base de données
+    db_text_mp3 = client["mp3_text"]
+
+    mp3_text_collection = db_text_mp3["mp3_text_collection"]
+
+    # verifier la base de données 
+    db_list = client.list_database_names()
+    if not "mp3_text" in db_list :
+        raise HTTPException(500,  'la base de données na pas été crée')
+    
+    # verifier la collection 
+    col_list = client.list_collection_names()
+    if not "mp3_text_collection" in col_list:
+        raise HTTPException(500,  'la collection na pas été crée')
+    
+    return {"ok" : f" {type(db_text_mp3)} "}
+
+
+
+
+    # mettre le fichier dans mongodb
+    # mongo_db.put(file_converted) 
+
+    # file_id = mongo_db.id()
+    # return file_id
