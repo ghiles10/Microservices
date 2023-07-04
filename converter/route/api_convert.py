@@ -17,24 +17,28 @@ from utils.validate_login import login
 
 app = FastAPI()
 # security = HTTPBasic()
-
+print('yoo-' * 40)
 @app.post("/convert")
-def convert(credentials: HTTPBasicCredentials , mp3_file: UploadFile ):
+def convert( mp3_file: UploadFile ):
 
     """ Convert MP3 to text route and send it to mongoBD database """
 
-    data_credentials = dict(credentials)
-    response = login(data_credentials)
+    # data_credentials = dict(credentials)
+    # response = login(data_credentials)
 
-    # Vérifier les informations d'identification
-    if not response.status_code == 200 : 
-        raise response.raise_for_status()
+    # # Vérifier les informations d'identification
+    # if not response.status_code == 200 : 
+    #     raise response.raise_for_status()
 
     # Traiter le fichier MP3
+
+    print('too-' * 40)
     file_converted = convert_mp3_to_text(mp3_file) 
 
     # Mongo db connexion
     client = MongoClient("mongodb://mongodb:27017/")
+
+    print('dans mongo' * 50)
 
     # crée la base de données
     db_text_mp3 = client["mp3_text"]

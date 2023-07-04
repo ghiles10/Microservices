@@ -1,6 +1,7 @@
 import speech_recognition as sr
 from pydub import AudioSegment
 import tempfile
+import io
 
 
 def convert_mp3_to_text(mp3_file):
@@ -8,7 +9,8 @@ def convert_mp3_to_text(mp3_file):
     """Takes MP3 file and convert it to text file with speech to reconition """
 
     # upload MP3 using pydub
-    audio = AudioSegment.from_mp3(mp3_file)
+    file_contents = mp3_file.read()
+    audio = AudioSegment.from_mp3(io.BytesIO(file_contents))
 
     # Créer un fichier temporaire pour le fichier audio
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_audio:
@@ -28,7 +30,7 @@ def convert_mp3_to_text(mp3_file):
     return text
 
 
-if '__name__' == '__main__' : 
+if __name__ == '__main__' : 
 
     # Exemple d'utilisation
     mp3_file = "/workspaces/Microservices/sample-1.mp3"
