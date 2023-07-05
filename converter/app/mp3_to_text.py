@@ -9,8 +9,11 @@ def convert_mp3_to_text(mp3_file):
     """Takes MP3 file and convert it to text file with speech to reconition """
 
     # upload MP3 using pydub
-    file_contents = mp3_file.read()
-    audio = AudioSegment.from_mp3(io.BytesIO(file_contents))
+    file_contents = mp3_file.file.read()
+    print('--- voici le type de file ---'*50)
+    print(type(file_contents))
+
+    audio = AudioSegment.from_mp3(file_contents)
 
     # Créer un fichier temporaire pour le fichier audio
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_audio:
@@ -28,7 +31,6 @@ def convert_mp3_to_text(mp3_file):
 
 
     return text
-
 
 if __name__ == '__main__' : 
 
