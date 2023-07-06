@@ -4,6 +4,7 @@ COPY . /app
 WORKDIR /app
 
 RUN apk update && apk add --no-cache ffmpeg
+RUN apk add flac
 
 RUN pip install python-multipart
 RUN pip install -r requirements.txt

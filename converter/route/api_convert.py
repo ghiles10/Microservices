@@ -1,5 +1,3 @@
-print('k' *200)
-
 import sys 
 sys.path.append(r"./")
 
@@ -17,9 +15,10 @@ from utils.validate_login import login
 
 app = FastAPI()
 # security = HTTPBasic()
-print('yoo-' * 40)
+
+print('------------------------- bientot dans post /convert --------------------------------' )
 @app.post("/convert")
-def convert( mp3_file: UploadFile ):
+async def convert( mp3_file: UploadFile ):
 
     """ Convert MP3 to text route and send it to mongoBD database """
 
@@ -32,30 +31,31 @@ def convert( mp3_file: UploadFile ):
 
     # Traiter le fichier MP3
 
-    print('too-' * 40)
-    file_converted = convert_mp3_to_text(mp3_file) 
+    print('------------------------- dans post /convert --------------------------------' )
+    file_converted = await convert_mp3_to_text(mp3_file) 
 
     # Mongo db connexion
-    client = MongoClient("mongodb://mongodb:27017/")
+    # client = MongoClient("mongodb://mongodb:27017/")
 
-    print('dans mongo' * 50)
+    # print('dans mongo' * 50)
 
-    # crée la base de données
-    db_text_mp3 = client["mp3_text"]
+    # # crée la base de données
+    # db_text_mp3 = client["mp3_text"]
 
-    mp3_text_collection = db_text_mp3["mp3_text_collection"]
+    # mp3_text_collection = db_text_mp3["mp3_text_collection"]
 
-    # verifier la base de données 
-    db_list = client.list_database_names()
-    if not "mp3_text" in db_list :
-        raise HTTPException(500,  'la base de données na pas été crée')
+    # # verifier la base de données 
+    # db_list = client.list_database_names()
+    # if not "mp3_text" in db_list :
+    #     raise HTTPException(500,  'la base de données na pas été crée')
     
-    # verifier la collection 
-    col_list = client.list_collection_names()
-    if not "mp3_text_collection" in col_list:
-        raise HTTPException(500,  'la collection na pas été crée')
+    # # verifier la collection 
+    # col_list = client.list_collection_names()
+    # if not "mp3_text_collection" in col_list:
+    #     raise HTTPException(500,  'la collection na pas été crée')
     
-    return {"ok" : f" {type(db_text_mp3)} "}
+    # return {"ok" : f" {type(db_text_mp3)} "}
+    return file_converted
 
 
 

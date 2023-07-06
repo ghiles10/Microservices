@@ -4,16 +4,20 @@ import tempfile
 import io
 
 
-def convert_mp3_to_text(mp3_file):
+async def convert_mp3_to_text(mp3_file):
 
     """Takes MP3 file and convert it to text file with speech to reconition """
 
     # upload MP3 using pydub
-    file_contents = mp3_file.file.read()
-    print('--- voici le type de file ---'*50)
+    file_contents = await mp3_file.read()
+    audio_file = io.BytesIO(file_contents)
+
+    print('--------------------------- voici le type de file ------------------------------')
     print(type(file_contents))
 
-    audio = AudioSegment.from_mp3(file_contents)
+    audio = AudioSegment.from_mp3(audio_file)
+
+
 
     # Créer un fichier temporaire pour le fichier audio
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_audio:
