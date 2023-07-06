@@ -18,7 +18,6 @@ async def convert_mp3_to_text(mp3_file):
     audio = AudioSegment.from_mp3(audio_file)
 
 
-
     # Créer un fichier temporaire pour le fichier audio
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_audio:
         temp_file_path = temp_audio.name
