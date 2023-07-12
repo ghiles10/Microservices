@@ -1,17 +1,16 @@
 import sys 
 sys.path.append(r"./")
 
-print('ok 1')
-
-from fastapi import FastAPI, HTTPException, UploadFile,Depends
+from fastapi import FastAPI, HTTPException, UploadFile, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from pymongo import MongoClient
-
-print('ok 2')
-
+import datetime
+from bson.objectid import ObjectId
+import json
 
 from app.mp3_to_text import convert_mp3_to_text 
 from utils.validate_login import login
+from utils.conn_mongodb import get_client_mongodb
+from app.mongodb_check import create_db
 
 app = FastAPI()
 # security = HTTPBasic()
@@ -42,50 +41,30 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
     print('-------------------------essaye connexion mongo----------------------------')
     #Mongo db connexion
-    client = MongoClient("mongodb://mongodb:27017/")
+    client = get_client_mongodb()
 
     print('-------------------------dans mongo----------------------------')
 
-    # crée la base de données
-    db_text_mp3 = client["mp3_text"]
+    # cheks health mongo db
+    try : 
+        db_mongodb = create_db(client)
 
-    # crée une collection
-    mp3_text_collection = db_text_mp3["mp3_text_collection"]
-
-    # insertion d'un document pour verifier 
-    document = {"key": "value"}
-    mp3_text_collection.insert_one(document)
-
-    #  verifier la base de données 
-    db_list = client.list_databases()
+    except Exception :
+        raise HTTPException(status_code=500 , detail="Error in mongo db connexion")
     
-    database_list = []  
-    for db_info in list(db_list) : 
-        database_list.append(db_info.values()) 
-    
-    print(database_list)
-    
-    db_list_finale = []
-    for db_values in database_list:
-        for value_db in db_values:
-            db_list_finale.append(value_db)
-
-
-    if  "mp3_text" not in db_list_finale :
-        raise HTTPException(500,  'la base de données na pas été crée')
-    
-    # verifier la collection 
-    col_list = db_text_mp3.list_collection_names()
-    if not "mp3_text_collection" in col_list:
-        raise HTTPException(500,  'la collection na pas été crée')
-    
-    return file_converted
-
-
-
 
     # mettre le fichier dans mongodb
-    # mongo_db.put(file_converted) 
+    result = db_mongodb.insert_one({
+                                    "text": str(file_converted) , 
+                                    "username": str(credentials.username) ,
+                                    "date": str( datetime.datetime.now() ) ,
+                                    "file_name": str (mp3_file.filename )
+                                    }) 
 
-    # file_id = mongo_db.id()
-    # return file_id
+    print(f' ----------------- result insertion : { result.inserted_id } --------------------------')
+
+    document  = db_mongodb.find_one({"_id": ObjectId(result.inserted_id)} , {"_id": 0})
+
+    return document
+
+
