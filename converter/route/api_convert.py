@@ -58,7 +58,20 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
     #  verifier la base de données 
     db_list = client.list_databases()
-    if not "mp3_text" in db_list :
+    
+    database_list = []  
+    for db_info in list(db_list) : 
+        database_list.append(db_info.values()) 
+    
+    print(database_list)
+    
+    db_list_finale = []
+    for db_values in database_list:
+        for value_db in db_values:
+            db_list_finale.append(value_db)
+
+
+    if  "mp3_text" not in db_list_finale :
         raise HTTPException(500,  'la base de données na pas été crée')
     
     # verifier la collection 
