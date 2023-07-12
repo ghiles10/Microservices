@@ -4,7 +4,6 @@ sys.path.append(r"./")
 print('ok 1')
 
 from fastapi import FastAPI, HTTPException, UploadFile,Depends
-from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pymongo import MongoClient
 
@@ -29,7 +28,7 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
     data_credentials = dict(credentials)
     response = login(data_credentials)
 
-    print('------------------------- verfication login --------------------------------' )
+    print('-------------------------verfication login --------------------------------' )
 
     # Vérifier les informations d'identification
     if not response.status_code == 200 : 
@@ -37,29 +36,35 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
     #Traiter le fichier MP3
 
-    print('------------------------- dans post /convert --------------------------------' )
+    print('-------------------------dans post /convert --------------------------------' )
     file_converted = await convert_mp3_to_text(mp3_file) 
 
+
+    print('-------------------------essaye connexion mongo----------------------------')
     #Mongo db connexion
-    # client = MongoClient("mongodb://mongodb:27017/")
+    client = MongoClient("mongodb://mongodb:27017/")
 
-    # print('-------------------------------dans mongo----------------------------')
+    print('-------------------------dans mongo----------------------------')
 
-    # # crée la base de données
-    # db_text_mp3 = client["mp3_text"]
+    # crée la base de données
+    db_text_mp3 = client["mp3_text"]
 
-    # # crée une collection
-    # mp3_text_collection = db_text_mp3["mp3_text_collection"]
+    # crée une collection
+    mp3_text_collection = db_text_mp3["mp3_text_collection"]
 
-    # # # verifier la base de données 
-    # db_list = client.list_database_names()
-    # if not "mp3_text" in db_list :
-    #     raise HTTPException(500,  'la base de données na pas été crée')
+    # insertion d'un document pour verifier 
+    document = {"key": "value"}
+    mp3_text_collection.insert_one(document)
+
+    #  verifier la base de données 
+    db_list = client.list_databases()
+    if not "mp3_text" in db_list :
+        raise HTTPException(500,  'la base de données na pas été crée')
     
-    # # verifier la collection 
-    # col_list = client.list_collection_names()
-    # if not "mp3_text_collection" in col_list:
-    #     raise HTTPException(500,  'la collection na pas été crée')
+    # verifier la collection 
+    col_list = db_text_mp3.list_collection_names()
+    if not "mp3_text_collection" in col_list:
+        raise HTTPException(500,  'la collection na pas été crée')
     
     return file_converted
 
