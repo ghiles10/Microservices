@@ -35,3 +35,5 @@ def create_db(client : MongoClient)  :
         raise HTTPException(500,  'la collection na pas été crée')
     
     return db_text_mp3.mp3_text_collection 
+
+

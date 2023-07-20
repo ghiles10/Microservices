@@ -10,11 +10,11 @@ import json
 from app.mp3_to_text import convert_mp3_to_text 
 from utils.validate_login import login
 from utils.conn_mongodb import get_client_mongodb
-from app.mongodb_check import create_db
+# from app.mongodb_check import create_db
+from app.test_class_abstraite import DbMongo, PyMongoClientDatabase
+
 
 app = FastAPI()
-# security = HTTPBasic()
-
 
 
 print('------------------------- bientot dans post /convert --------------------------------' )
@@ -40,21 +40,24 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
 
     print('-------------------------essaye connexion mongo----------------------------')
+    
     #Mongo db connexion
     client = get_client_mongodb()
+    client_test = PyMongoClientDatabase(client)
 
     print('-------------------------dans mongo----------------------------')
 
     # cheks health mongo db
     try : 
-        db_mongodb = create_db(client)
+        db_mongodb = DbMongo(client_test)
+        db_mongodb.check_db_health()
 
     except Exception :
         raise HTTPException(status_code=500 , detail="Error in mongo db connexion")
     
 
     # mettre le fichier dans mongodb
-    result = db_mongodb.insert_one({
+    result = db_mongodb.insert_test_document({
                                     "text": str(file_converted) , 
                                     "username": str(credentials.username) ,
                                     "date": str( datetime.datetime.now() ) ,
@@ -63,7 +66,7 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
     print(f' ----------------- result insertion : { result.inserted_id } --------------------------')
 
-    document  = db_mongodb.find_one({"_id": ObjectId(result.inserted_id)} , {"_id": 0})
+    document  = db_mongodb.db.find_one({"_id": ObjectId(result.inserted_id)} , {"_id": 0})
 
     return document
 
