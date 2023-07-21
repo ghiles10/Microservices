@@ -1,7 +1,14 @@
+import sys 
+sys.path.append(r"./")
+
 import speech_recognition as sr
 from pydub import AudioSegment
 import tempfile
 import io
+
+from conf import log_conf
+
+logger = log_conf.logger
 
 
 async def convert_mp3_to_text(mp3_file):
@@ -10,13 +17,12 @@ async def convert_mp3_to_text(mp3_file):
 
     # upload MP3 using pydub
     file_contents = await mp3_file.read()
+
+    logger.info("MP3 file is read and will Buffered I/O stream")
     audio_file = io.BytesIO(file_contents)
 
-    print('--------------------------- voici le type de file ------------------------------')
-    print(type(file_contents))
-
     audio = AudioSegment.from_mp3(audio_file)
-
+    logger.info("MP3 file is converted to AudioSegment") 
 
     # Créer un fichier temporaire pour le fichier audio
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_audio:
@@ -32,6 +38,7 @@ async def convert_mp3_to_text(mp3_file):
             audio_data = recognizer.record(source)
             text = recognizer.recognize_google(audio_data)
 
+    logger.info("AudioSegment is converted to text") 
 
     return text
 

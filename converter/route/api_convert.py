@@ -5,19 +5,19 @@ from fastapi import FastAPI, HTTPException, UploadFile, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import datetime
 from bson.objectid import ObjectId
-import json
+
 
 from app.mp3_to_text import convert_mp3_to_text 
 from utils.validate_login import login
 from utils.conn_mongodb import get_client_mongodb
-# from app.mongodb_check import create_db
-from app.test_class_abstraite import DbMongo, PyMongoClientDatabase
+from app.mongodb_user import DbMongo, PyMongoClientDatabase
+from conf import log_conf
 
+logger = log_conf.logger
 
 app = FastAPI()
 
 
-print('------------------------- bientot dans post /convert --------------------------------' )
 @app.post("/convert")
 async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depends(HTTPBasic())):
 
@@ -27,7 +27,8 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
     data_credentials = dict(credentials)
     response = login(data_credentials)
 
-    print('-------------------------verfication login --------------------------------' )
+    logger.info(f"credentials user : {data_credentials}")
+    logger.info(f"response status code for login : {response.status_code}")
 
     # Vérifier les informations d'identification
     if not response.status_code == 200 : 
@@ -35,25 +36,22 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
 
     #Traiter le fichier MP3
 
-    print('-------------------------dans post /convert --------------------------------' )
     file_converted = await convert_mp3_to_text(mp3_file) 
+    logger.info("MP3 file is converted to text")
 
-
-    print('-------------------------essaye connexion mongo----------------------------')
     
     #Mongo db connexion
     client = get_client_mongodb()
-    client_test = PyMongoClientDatabase(client)
+    logger.info("MongoDB client is connected")
 
-    print('-------------------------dans mongo----------------------------')
+    client_test = PyMongoClientDatabase(client)
+    logger.info("MongoDB client is connected to database interface")
 
     # cheks health mongo db
-    try : 
-        db_mongodb = DbMongo(client_test)
-        db_mongodb.check_db_health()
-
-    except Exception :
-        raise HTTPException(status_code=500 , detail="Error in mongo db connexion")
+    db_mongodb = DbMongo(client_test)
+    db_mongodb.check_db_health()
+    
+    logger.info("MongoDB database is connected, health OK")
     
 
     # mettre le fichier dans mongodb
@@ -64,9 +62,10 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
                                     "file_name": str (mp3_file.filename )
                                     }) 
 
-    print(f' ----------------- result insertion : { result.inserted_id } --------------------------')
+    logger.info(f' file inserted ok with ID : { result.inserted_id } ')
 
-    document  = db_mongodb.db.find_one({"_id": ObjectId(result.inserted_id)} , {"_id": 0})
+    document  = db_mongodb.collection_db.collection.find_one({"_id": ObjectId(result.inserted_id)} , {"_id": 0})
+    logger.info(f' document found in collection with ID : { result.inserted_id } ')
 
     return document
 

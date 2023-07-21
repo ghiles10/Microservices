@@ -2,6 +2,10 @@ import pymongo
 from fastapi import  HTTPException 
 from abc import ABC, abstractmethod 
 
+from conf import log_conf
+
+logger = log_conf.logger
+
 
 # creating interfaces for database & collections 
 
@@ -43,7 +47,6 @@ class PyMongoClientDatabase(DatabaseClient) :
 
     def create_db(self, name : str) : 
 
-        print('-------------------------base créee !!---------------------------')
         return PyMongoUseDatabase( self.mongo_client[name] ) 
     
 
@@ -67,7 +70,7 @@ class PyMongoUseCollection(UseDataStructure) :
 
     def add_test_record(self, document  ) :
 
-        self.collection.insert_one(document) 
+        return self.collection.insert_one(document) 
         
 
 
@@ -81,42 +84,50 @@ class DbMongo :
         
         self.client = client 
         self.db = None
-        self.collection = None
+        self.collection_db = None
 
-        
 
     def create_db(self, db_name :str = "mp3_text")   : 
+
         ''' create mongo db database''' 
-        print('-------------------------dans create_db----------------------------')
+
         self.db = self.client.create_db(db_name)
-        print('-------------------------dans create_db fait----------------------------')
-        return self  
-    
+
+        logger.info(f"database mongo db created. Name : {db_name}")
+
+        return self      
+
+
     def create_collection(self ,collection_name : str = "mp3_text_collection")  : 
         ''' create a test collection in mongo db database '''
-        print('-------------------------dans create_collection----------------------------')
-        self.collection = self.db.create_data_structure(collection_name) 
+        
+        self.collection_db = self.db.create_data_structure(collection_name) 
 
+        logger.info(f"collection mongo db created. Name : {collection_name}")
 
         return self
 
-    def insert_test_document(self )  :
+
+    def insert_test_document(self, document : dict = {"key": "value"} )  :
         ''' insert a test document in a collection '''
-        print('-------------------------dans insert_test_document----------------------------')
+
         try :
-            self.collection.add_test_record({"key": "value"})  
-            return None 
-        
+            logger.info(f"test document inserted in collection : {document}")
+            return self.collection_db.add_test_record(document)  
+             
+
         except Exception  :
+
+            logger.error(f"test document not inserted in collection : {document}")
             raise HTTPException(500,  'la collection na pas été crée') 
         
 
     def check_db(self ) : 
         ''' check if the database is created '''
-        print('-------------------------dans check_db----------------------------')
+
+
         db_list = self.client.mongo_client.list_databases()
-        
-        db_list_values = [db_info.values() for db_info in db_list]  
+        db_list_values = [db_info.values() for db_info in db_list]          
 
         db_list_finale = []
         for db_values in db_list_values:
@@ -125,23 +136,35 @@ class DbMongo :
 
 
         if "mp3_text" not in db_list_finale :
+
+            logger.error(f"database mongo db not created. Name : mp3_text") 
             raise HTTPException(500,  'la base de données na pas été crée')
     
-    
+        logger.info(f"database mongo db created. Name : mp3_text")
+
+        return self
+
+
     def check_collection(self )  :
-        print('-------------------------dans check_collection ----------------------------')
+
         ''' check if the collection is created '''
 
-        collection_list = self.db.list_collection_names()
+        collection_list = self.db.database_mongodb.list_collection_names()
+
         if not "mp3_text_collection" in collection_list:
+
+            logger.error(f"collection mongo db not created. Name : mp3_text_collection")
             raise HTTPException(500,  'la collection na pas été crée') 
-        print('-------------------------fin check_collection----------------------------')
+
+        logger.info(f"collection mongo db created. Name : mp3_text_collection") 
 
     def check_db_health(self ) : 
         ''' check if the database and collection are created '''
 
-        self.create_db().check_db()
-        self.create_collection().check_collection()
+        self.create_db()
+        self.create_collection()
         self.insert_test_document()
+        self.check_db().check_collection()
+        
         
     
