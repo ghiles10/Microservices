@@ -24,5 +24,5 @@ def login(data_login, url = URL ) :
     return response
 
 if __name__ == '__main__' : 
-    login()  
+    pass   
 
