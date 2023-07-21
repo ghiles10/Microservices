@@ -2,9 +2,9 @@ import pymongo
 from fastapi import  HTTPException 
 from abc import ABC, abstractmethod 
 
-from conf import log_conf
+from conf.log_conf import setup_logger 
 
-logger = log_conf.logger
+logger = setup_logger(__name__)
 
 
 # creating interfaces for database & collections 
@@ -157,6 +157,7 @@ class DbMongo :
             raise HTTPException(500,  'la collection na pas été crée') 
 
         logger.info(f"collection mongo db created. Name : mp3_text_collection") 
+
 
     def check_db_health(self ) : 
         ''' check if the database and collection are created '''

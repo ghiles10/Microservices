@@ -1,14 +1,11 @@
-import sys 
-sys.path.append(r"./")
-
 import speech_recognition as sr
 from pydub import AudioSegment
 import tempfile
 import io
 
-from conf import log_conf
+from conf.log_conf import setup_logger 
 
-logger = log_conf.logger
+logger = setup_logger(__name__)
 
 
 async def convert_mp3_to_text(mp3_file):

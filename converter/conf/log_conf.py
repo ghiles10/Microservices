@@ -1,22 +1,29 @@
 import os
-import sys
 from pathlib import Path
 import logging
 
-FILE_DIR = Path(__file__).resolve().parents[0]
+# retrieve the path of the current file
+ROOT_DIR = "."
 
-if not os.path.exists(f"{FILE_DIR.parent}/log/"):
-    os.mkdir(f"{FILE_DIR.parent}/log/")
+# create a log folder if it does not exist in the parent directory of the current file
+if not os.path.exists(f"{ROOT_DIR}/log/"):
+    os.mkdir(f"{ROOT_DIR}/log/")
 
-file_name = os.path.basename(sys.argv[0]).split(".")[0]
 
 
-logger = logging.getLogger(file_name)
-handler = logging.FileHandler(f"{FILE_DIR.parent}/log/{file_name}.log", mode="w")
-formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(funcName)s  - %(message)s"
-)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+def setup_logger(name_file) : 
 
+    ''' setup a logger object and return it'''
+
+
+    # create a logger object and set the logging level to INFO 
+    logger = logging.getLogger(name_file)
+    handler = logging.FileHandler(f"{ROOT_DIR}/log/{name_file}.log", mode="w")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(funcName)s  - %(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+    return logger 

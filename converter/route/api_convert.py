@@ -6,14 +6,15 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import datetime
 from bson.objectid import ObjectId
 
-
 from app.mp3_to_text import convert_mp3_to_text 
 from utils.validate_login import login
 from utils.conn_mongodb import get_client_mongodb
 from app.mongodb_user import DbMongo, PyMongoClientDatabase
-from conf import log_conf
+from conf.log_conf import setup_logger
 
-logger = log_conf.logger
+
+
+logger = setup_logger(__name__)
 
 app = FastAPI()
 
@@ -39,7 +40,7 @@ async def convert(mp3_file: UploadFile, credentials: HTTPBasicCredentials = Depe
     file_converted = await convert_mp3_to_text(mp3_file) 
     logger.info("MP3 file is converted to text")
 
-    
+
     #Mongo db connexion
     client = get_client_mongodb()
     logger.info("MongoDB client is connected")
