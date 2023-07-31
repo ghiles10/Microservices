@@ -16,6 +16,8 @@ async def convert_mp3_to_text(mp3_file):
     file_contents = await mp3_file.read()
 
     logger.info("MP3 file is read and will Buffered I/O stream")
+    # BytesIO used in order to store file in mémory so audio segment can use the object of the file 
+    # If the file is large, other methods should be considered 
     audio_file = io.BytesIO(file_contents)
 
     audio = AudioSegment.from_mp3(audio_file)
