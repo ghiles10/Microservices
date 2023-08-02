@@ -4,6 +4,7 @@ sys.path.append(r"./")
 from fastapi import FastAPI, HTTPException
 from fastapi.security import HTTPBasicCredentials
 
+from api.services.user_services import UserService 
 from database.conn import get_postgres_connection 
 from api.exceptions.exceptions import UserAlreadyExists, UserNotExists
 from api.conf import log_conf
@@ -21,35 +22,14 @@ def subscribe(credentials: HTTPBasicCredentials):
     if not credentials:
         raise HTTPException(status_code=401, detail="Missing credentials")
 
-    username = credentials.username
-    password = credentials.password
+    credentials_dict  = dict(credentials)
 
-    # vérification des informations d'authentification 
-    
-    conn_db = get_postgres_connection() 
+    user_api_service = UserService(credentials_dict) 
 
-    with conn_db.cursor() as cur: 
+    # cheks subscribe 
+    conn_db = get_postgres_connection()
 
-        try:
-            cur.execute( " INSERT INTO users (username, password) VALUES (%s, %s) "  ,          
-            ( username , password )  
-            )
-
-        except : 
-            logger.error( 'error in writing sql query subscribe' )
-            raise HTTPException(status_code=500, detail = 'Error in Database' )
-
-        # cheks query
-        affected_rows = cur.rowcount
-        if affected_rows < 1 : 
-            
-            logger.error('no rows affected')
-            raise HTTPException(status_code=401  , detail = f"erreur insertion username : {username}") 
-        
-        conn_db.commit()
-
-        return {f"message: {username} subscribe"}
-
+    return user_api_service.subscribe(conn_db) 
 
 @app.post("/login")
 def login(credentials: HTTPBasicCredentials): 
@@ -59,19 +39,13 @@ def login(credentials: HTTPBasicCredentials):
     if not credentials:
         raise HTTPException(status_code=401, detail="Missing credentials") 
     
+    credentials_dict  = dict(credentials) 
+
+    # create user service
+    user_api_service = UserService(credentials_dict)
+
     # cheks subscribe 
     conn_db = get_postgres_connection()  
-    with conn_db.cursor() as cur: 
-
-        try : 
-            cur.execute(f"SELECT username FROM users where username = '{credentials.username}'") 
-
-        except:
-            logger.error(f"error in database when retreiving username {credentials.username}") 
-            raise HTTPException(status_code=500, detail="Error in database")
-
-        if not cur.fetchone() : 
-            logger.error(f" User {credentials.username} Not Exists ")
-            raise HTTPException( status_code=401, detail=f"Username {credentials.username} Invalid" ) 
     
-    return {f"User {credentials.username} Logged"}
+
+    return user_api_service.login(conn_db) 

@@ -1,5 +1,6 @@
 import requests 
 
+
 URL = r'http://app:8000/login'
 
 
@@ -13,16 +14,8 @@ def login(data_login, url = URL ) :
     }
 
 
-    response = requests.post(url, headers=headers, json=data_login, timeout=20)
-
-    # if response.status_code == 200:
-    #     return True 
- 
-    # else : 
-    #      response.raise_for_status() 
+    response = requests.post(url, headers=headers, json=data_login, timeout=5)
 
     return response
 
-if __name__ == '__main__' : 
-    pass   
 
